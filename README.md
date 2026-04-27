@@ -52,7 +52,7 @@ npm run build
 cd ..
 ```
 
-6. Iniciar el servidor:
+5. Iniciar el servidor:
 
 ```cmd
 cd back
@@ -62,7 +62,7 @@ uvicorn main:app
 
 > Reemplazar `venv\Scripts\activate` por `source venv/bin/activate` en Linux/MacOS.
 
-7. Ir a `http://localhost:8000` (o el puerto que se muestre en la terminal)
+6. Ir a `http://localhost:8000` (o el puerto que se muestre en la terminal)
 
 ## Supuestos de cosas que no se mencionaron en el enunciado
 
