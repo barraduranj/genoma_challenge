@@ -1,11 +1,31 @@
+from sqlmodel import Session
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
+from contextlib import asynccontextmanager
 import os
 
-app = FastAPI(title="Desafío Técnico Genomawork 2026")
+from database import create_db_and_tables, engine
+from routes import restaurants
+from seed import seed_data
 
-# Rutas de la API
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Crear las tablas al iniciar la aplicación
+    create_db_and_tables()
+    with Session(engine) as session:
+        seed_data(session)
+    yield
+
+app = FastAPI(
+    title="Desafío Técnico Genomawork 2026",
+    lifespan=lifespan
+)
+
+# Incluir las rutas de la API
+app.include_router(restaurants.router)
+
+# Ruta de salud básica
 @app.get("/api/health")
 async def health_check():
     return {"status": "ok", "message": "Backend running"}
