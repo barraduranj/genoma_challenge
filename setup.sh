@@ -24,6 +24,8 @@ echo "1. En una terminal: cd back && source venv/bin/activate && uvicorn main:ap
 echo "2. En otra terminal: cd front && npm run dev"
 echo ""
 echo "Para ejecutar en modo producción (servido desde FastAPI):"
+echo "Opcional: ejecutar 'bash init.sh' para hacerlo automáticamente"
 echo "1. cd front && npm run build"
 echo "2. cd back && source venv/bin/activate && uvicorn main:app"
 echo "3. Visita http://localhost:8000"
+echo "Opcional: ejecutar 'bash init.sh' para hacerlo automáticamente"
