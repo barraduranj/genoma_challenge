@@ -8,6 +8,8 @@ import { esES } from '@mui/x-data-grid/locales';
 import Box from '@mui/material/Box';
 import Rating from '@mui/material/Rating';
 import Checkbox from '@mui/material/Checkbox';
+import { useState, useEffect } from 'react';
+
 
 const theme = createTheme(
   {
@@ -20,8 +22,14 @@ const theme = createTheme(
 
 const columns = [
   { field: 'name', headerName: 'Nombre', width: 250 },
-  { field: 'location', headerName: 'Ubicación', width: 250 },
-  { field: 'foodType', headerName: 'Tipo de comida', width: 200 },
+  { 
+    field: 'location', 
+    headerName: 'Ubicación', 
+    width: 250,
+    valueGetter: (value, row) => `${row.city || ''}, ${row.country || ''}`
+  },
+  { field: 'food_type', headerName: 'Tipo de comida', width: 200 },
+
   {
     field: 'rating',
     headerName: 'Calificación',
@@ -47,27 +55,35 @@ const columns = [
 ];
 
 
-const rows = [
-  { id: 1, name: 'Cocó Café', location: 'San Miguel, Chile', foodType: 'Cafetería, Pastelería', rating: 5.0, visited: true },
-  { id: 2, name: 'Coffee Culture Coffee Roasters', location: 'Maipú, Chile', foodType: 'Cafetería', rating: 4.0, visited: true },
-  { id: 3, name: 'Vapiano', location: 'Las Condes, Chile', foodType: 'Italiana', rating: 4.5, visited: true },
-  { id: 4, name: 'Boragó', location: 'Vitacura, Chile', foodType: 'Experimental, Gourmet', rating: null, visited: false },
-  { id: 5, name: 'Alchemist', location: 'Copenhagen, Dinamarca', foodType: 'Gourmet', rating: null, visited: false },
-];
-
-
 const paginationModel = { page: 0, pageSize: 10 };
 
 export default function RestaurantTable() {
+  const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/restaurants/')
+      .then(res => res.json())
+      .then(data => {
+        setRows(data);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error("Error fetching restaurants:", err);
+        setLoading(false);
+      });
+  }, []);
+
   return (
-    <Box sx={{ height: 400, width: '100%' }}>
+    <Box sx={{ height: 600, width: '100%' }}>
       <ThemeProvider theme={theme}>
         <DataGrid
           rows={rows}
           columns={columns}
+          loading={loading}
           initialState={{ pagination: { paginationModel } }}
           pageSizeOptions={[10, 25, 50]}
-          checkboxSelection
+          disableRowSelectionOnClick
           sx={{ border: 0 }}
         />
       </ThemeProvider>
