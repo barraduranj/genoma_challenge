@@ -16,7 +16,11 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import Tooltip from '@mui/material/Tooltip';
 import Button from '@mui/material/Button';
-
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import countriesData from '../data/countries.json';
 
 const theme = createTheme(
   {
@@ -29,17 +33,28 @@ const theme = createTheme(
 
 const paginationModel = { page: 0, pageSize: 10 };
 
+// Lista de países para el filtro (lista completa, aunque también se podría traer desde la base)
+const filterCountries = ["Todos", ...countriesData.map(c => c.name).sort((a, b) => a.localeCompare(b))];
+
 export default function RestaurantTable() {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
-  
+  const [selectedCountry, setSelectedCountry] = useState("Todos");
+
   // Estados para el Dialog
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedRestaurant, setSelectedRestaurant] = useState(null);
 
   const fetchRestaurants = useCallback(() => {
     setLoading(true);
-    fetch('/api/restaurants/')
+
+    // Construir la URL con el filtro si aplica
+    let url = '/api/restaurants/';
+    if (selectedCountry !== "Todos") {
+      url += `?country=${encodeURIComponent(selectedCountry)}`;
+    }
+
+    fetch(url)
       .then(res => res.json())
       .then(data => {
         setRows(data);
@@ -49,11 +64,12 @@ export default function RestaurantTable() {
         console.error("Error fetching restaurants:", err);
         setLoading(false);
       });
-  }, []);
+  }, [selectedCountry]);
 
   useEffect(() => {
     fetchRestaurants();
   }, [fetchRestaurants]);
+
 
   const handleUpdate = async (id, updatedData) => {
     try {
@@ -75,7 +91,7 @@ export default function RestaurantTable() {
 
   const handleDelete = async (id) => {
     if (!window.confirm("¿Estás seguro de que quieres eliminar este lugar?")) return;
-    
+
     try {
       const response = await fetch(`/api/restaurants/${id}`, {
         method: 'DELETE',
@@ -101,7 +117,7 @@ export default function RestaurantTable() {
       });
       if (response.ok) {
         setDialogOpen(false);
-        fetchRestaurants(); // Recargamos para asegurar consistencia
+        fetchRestaurants();
       }
     } catch (error) {
       console.error("Error saving restaurant:", error);
@@ -163,9 +179,9 @@ export default function RestaurantTable() {
       renderCell: (params) => (
         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', height: '100%' }}>
           <Tooltip title="Editar">
-            <IconButton 
+            <IconButton
               className="edit-icon"
-              size="small" 
+              size="small"
               sx={{ color: 'action.disabled', transition: 'color 0.2s' }}
               onClick={() => {
                 setSelectedRestaurant(params.row);
@@ -176,9 +192,9 @@ export default function RestaurantTable() {
             </IconButton>
           </Tooltip>
           <Tooltip title="Eliminar">
-            <IconButton 
+            <IconButton
               className="delete-icon"
-              size="small" 
+              size="small"
               sx={{ color: 'action.disabled', transition: 'color 0.2s' }}
               onClick={() => handleDelete(params.id)}
             >
@@ -193,18 +209,32 @@ export default function RestaurantTable() {
 
   return (
     <Box sx={{ width: '100%' }}>
-      <Box sx={{ mb: 3, display: 'flex', justifyContent: 'flex-end' }}>
-        <Button 
-          variant="contained" 
+      <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <FormControl size="small" sx={{ minWidth: 200 }}>
+          <InputLabel id="country-filter-label">Filtrar por País</InputLabel>
+          <Select
+            labelId="country-filter-label"
+            value={selectedCountry}
+            label="Filtrar por País"
+            onChange={(e) => setSelectedCountry(e.target.value)}
+          >
+            {filterCountries.map(country => (
+              <MenuItem key={country} value={country}>{country}</MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+
+        <Button
+          variant="contained"
           startIcon={<AddIcon />}
           onClick={() => {
             setSelectedRestaurant(null);
             setDialogOpen(true);
           }}
-          sx={{ 
-            bgcolor: '#f175a5', 
-            '&:hover': { bgcolor: '#d15d8a' }, 
-            borderRadius: 2, 
+          sx={{
+            bgcolor: '#f175a5',
+            '&:hover': { bgcolor: '#d15d8a' },
+            borderRadius: 2,
             px: 3,
             textTransform: 'none',
             fontWeight: 'bold'
@@ -213,6 +243,7 @@ export default function RestaurantTable() {
           Nuevo Restaurante
         </Button>
       </Box>
+
 
       <Box sx={{ height: 600, width: '100%' }}>
         <ThemeProvider theme={theme}>
@@ -223,27 +254,27 @@ export default function RestaurantTable() {
             initialState={{ pagination: { paginationModel } }}
             pageSizeOptions={[10, 25, 50]}
             disableRowSelectionOnClick
-            sx={{ 
+            sx={{
               border: 0,
               '& .MuiDataGrid-columnHeaders': {
                 bgcolor: '#fafafa',
                 fontWeight: 'bold'
               },
               '& .MuiDataGrid-row:hover .edit-icon': {
-                color: '#ffb300', // Un ámbar/amarillo más vibrante
+                color: '#ffb300',
               },
               '& .MuiDataGrid-row:hover .delete-icon': {
-                color: '#f44336', // Rojo error estándar
+                color: '#f44336',
               },
             }}
           />
-          
-          <RestaurantDialog 
-            open={dialogOpen} 
+
+          <RestaurantDialog
+            open={dialogOpen}
             onClose={() => {
               setDialogOpen(false);
               setSelectedRestaurant(null);
-            }} 
+            }}
             onSave={handleSave}
             initialData={selectedRestaurant}
           />
