@@ -11,7 +11,7 @@ function App() {
           🥗 Bitácora de Sabores 🍽️
         </Typography>
         <Typography variant="h6" color="text.secondary" sx={{ maxWidth: '800px', mx: 'auto' }}>
-          ¡Bienvenida! Este espacio fue creado por tus Genomines, para guardar esos lugares que valen la pena volver a visitar. Tu propio registro de los mejores restaurantes del 🌎.
+          ¡Bienvenida! Este espacio fue creado por tus genomines, para guardar esos lugares que valen la pena volver a visitar. Tu propio registro de los mejores restaurantes del 🌎.
         </Typography>
       </Box>
 
@@ -21,7 +21,7 @@ function App() {
 
       <Box component="footer" sx={{ py: 4, mt: 'auto', borderTop: '1px solid', borderColor: 'divider' }}>
         <Typography variant="body2" color="text.secondary" align="center">
-          Desarrollado con ❤️ por <strong>barraduranj</strong> para los <strong>Genomines</strong>
+          Desarrollado con ❤️ por <strong>barraduranj</strong> para los <strong>genomines</strong>
         </Typography>
       </Box>
     </Container>
