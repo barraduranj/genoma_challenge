@@ -8,8 +8,7 @@ import { esES } from '@mui/x-data-grid/locales';
 import Box from '@mui/material/Box';
 import Rating from '@mui/material/Rating';
 import Checkbox from '@mui/material/Checkbox';
-import { useState, useEffect } from 'react';
-
+import { useState, useEffect, useMemo, useCallback } from 'react';
 
 const theme = createTheme(
   {
@@ -20,48 +19,14 @@ const theme = createTheme(
   esES,
 );
 
-const columns = [
-  { field: 'name', headerName: 'Nombre', width: 250 },
-  { 
-    field: 'location', 
-    headerName: 'Ubicación', 
-    width: 250,
-    valueGetter: (value, row) => `${row.city || ''}, ${row.country || ''}`
-  },
-  { field: 'food_type', headerName: 'Tipo de comida', width: 200 },
-
-  {
-    field: 'rating',
-    headerName: 'Calificación',
-    width: 150,
-    renderCell: (params) => (
-      <Rating
-        value={params.value || 0}
-        precision={0.5}
-        readOnly
-        disabled={!params.row.visited}
-      />
-    ),
-
-  },
-  {
-    field: 'visited',
-    headerName: 'Visitado',
-    width: 150,
-    renderCell: (params) => (
-      <Checkbox checked={!!params.value} readOnly />
-    ),
-  },
-];
-
-
 const paginationModel = { page: 0, pageSize: 10 };
 
 export default function RestaurantTable() {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const fetchRestaurants = useCallback(() => {
+    setLoading(true);
     fetch('/api/restaurants/')
       .then(res => res.json())
       .then(data => {
@@ -73,6 +38,75 @@ export default function RestaurantTable() {
         setLoading(false);
       });
   }, []);
+
+  useEffect(() => {
+    fetchRestaurants();
+  }, [fetchRestaurants]);
+
+  const handleUpdate = async (id, updatedData) => {
+    try {
+      const response = await fetch(`/api/restaurants/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedData),
+      });
+      if (response.ok) {
+        const updatedRestaurant = await response.json();
+        setRows((prevRows) =>
+          prevRows.map((row) => (row.id === id ? updatedRestaurant : row))
+        );
+      }
+    } catch (error) {
+      console.error("Error updating restaurant:", error);
+    }
+  };
+
+  const columns = useMemo(() => [
+    { field: 'name', headerName: 'Nombre', width: 250 },
+    {
+      field: 'location',
+      headerName: 'Ubicación',
+      width: 250,
+      valueGetter: (value, row) => `${row.city || ''}, ${row.country || ''}`
+    },
+    { field: 'food_type', headerName: 'Tipo de comida', width: 200 },
+    {
+      field: 'rating',
+      headerName: 'Calificación',
+      width: 180,
+      renderCell: (params) => (
+        <Box sx={{ display: 'flex', alignItems: 'center', height: '100%' }}>
+          <Rating
+            value={params.value || 0}
+            precision={0.5}
+            disabled={!params.row.visited}
+            onChange={(event, newValue) => {
+              handleUpdate(params.id, { rating: newValue });
+            }}
+          />
+        </Box>
+      ),
+    },
+    {
+      field: 'visited',
+      headerName: 'Visitado',
+      width: 120,
+      renderCell: (params) => (
+        <Box sx={{ display: 'flex', alignItems: 'center', height: '100%' }}>
+          <Checkbox
+            checked={!!params.value}
+            onChange={(event) => {
+              const isChecked = event.target.checked;
+              // Si marcamos como no visitado, opcionalmente reseteamos el rating a null
+              const update = { visited: isChecked };
+              if (!isChecked) update.rating = null;
+              handleUpdate(params.id, update);
+            }}
+          />
+        </Box>
+      ),
+    },
+  ], []);
 
   return (
     <Box sx={{ height: 600, width: '100%' }}>
@@ -90,3 +124,4 @@ export default function RestaurantTable() {
     </Box>
   );
 }
+
