@@ -1,47 +1,76 @@
+// El componente Table de MUI es simple, mientras que DataGrid trae filtrado y ordenamiento de base [https://mui.com/material-ui/react-table/].
+// Por defecto, viene localizado en inglés, pero se puede modificar según la documentación:
+// https://mui.com/x/react-data-grid/localization/?_gl=1*19l3q66*_up*MQ..*_ga*MTU0NjcwOTQwOS4xNzc3Mjk2NzQ0*_ga_5NXDQLC2ZK*czE3NzczMDg5NzMkbzMkZzAkdDE3NzczMDg5NzMkajYwJGwwJGgw#locale-text
+
+import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { DataGrid } from '@mui/x-data-grid';
+import { esES } from '@mui/x-data-grid/locales';
 import Box from '@mui/material/Box';
+import Rating from '@mui/material/Rating';
+import Checkbox from '@mui/material/Checkbox';
+
+const theme = createTheme(
+  {
+    palette: {
+      primary: { main: '#f175a5' }, // Rosado Genomawork, lo saqué del source code de la página :P
+    },
+  },
+  esES,
+);
 
 const columns = [
-    { field: 'id', hideable: false, headerName: 'ID', width: 70 },
-    { field: 'firstName', headerName: 'First name', width: 130 },
-    { field: 'lastName', headerName: 'Last name', width: 130 },
-    {
-        field: 'age',
-        headerName: 'Age',
-        type: 'number',
-        width: 90,
-    },
-    {
-        field: 'fullName',
-        headerName: 'Full name',
-        description: 'This column has a value getter and is not sortable.',
-        sortable: false,
-        width: 160,
-        valueGetter: (value, row) => `${row.firstName || ''} ${row.lastName || ''}`,
-    },
+  { field: 'name', headerName: 'Nombre', width: 250 },
+  { field: 'location', headerName: 'Ubicación', width: 250 },
+  { field: 'foodType', headerName: 'Tipo de comida', width: 200 },
+  {
+    field: 'rating',
+    headerName: 'Calificación',
+    width: 150,
+    renderCell: (params) => (
+      <Rating
+        value={params.value || 0}
+        precision={0.5}
+        readOnly
+        disabled={!params.row.visited}
+      />
+    ),
+
+  },
+  {
+    field: 'visited',
+    headerName: 'Visitado',
+    width: 150,
+    renderCell: (params) => (
+      <Checkbox checked={!!params.value} readOnly />
+    ),
+  },
 ];
+
 
 const rows = [
-    { id: 1, lastName: 'Snow', firstName: 'Jon', age: 35 },
-    { id: 2, lastName: 'Lannister', firstName: 'Cersei', age: 42 },
-    { id: 5, lastName: 'Targaryen', firstName: 'Daenerys', age: null },
-    { id: 6, lastName: 'Melisandre', firstName: null, age: 150 },
-    { id: 7, lastName: 'Clifford', firstName: 'Ferrara', age: 44 },
+  { id: 1, name: 'Cocó Café', location: 'San Miguel, Chile', foodType: 'Cafetería, Pastelería', rating: 5.0, visited: true },
+  { id: 2, name: 'Coffee Culture Coffee Roasters', location: 'Maipú, Chile', foodType: 'Cafetería', rating: 4.0, visited: true },
+  { id: 3, name: 'Vapiano', location: 'Las Condes, Chile', foodType: 'Italiana', rating: 4.5, visited: true },
+  { id: 4, name: 'Boragó', location: 'Vitacura, Chile', foodType: 'Experimental, Gourmet', rating: null, visited: false },
+  { id: 5, name: 'Alchemist', location: 'Copenhagen, Dinamarca', foodType: 'Gourmet', rating: null, visited: false },
 ];
 
-const paginationModel = { page: 0, pageSize: 5 };
+
+const paginationModel = { page: 0, pageSize: 10 };
 
 export default function RestaurantTable() {
-    return (
-        <Box sx={{ height: 400, width: '100%' }}>
-            <DataGrid
-                rows={rows}
-                columns={columns}
-                initialState={{ pagination: { paginationModel } }}
-                pageSizeOptions={[5, 10, 25, 50]}
-                checkboxSelection
-                sx={{ border: 0 }}
-            />
-        </Box>
-    );
+  return (
+    <Box sx={{ height: 400, width: '100%' }}>
+      <ThemeProvider theme={theme}>
+        <DataGrid
+          rows={rows}
+          columns={columns}
+          initialState={{ pagination: { paginationModel } }}
+          pageSizeOptions={[10, 25, 50]}
+          checkboxSelection
+          sx={{ border: 0 }}
+        />
+      </ThemeProvider>
+    </Box>
+  );
 }
