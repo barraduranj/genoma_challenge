@@ -1,8 +1,11 @@
+import RestaurantTable from "./components/RestaurantTable"
+
 function App() {
 
   return (
     <>
-      Genomines
+      <h1>Genomines</h1>
+      <RestaurantTable />
     </>
   )
 }
