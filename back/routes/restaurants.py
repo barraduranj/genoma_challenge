@@ -1,14 +1,21 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
-from typing import List
+from typing import List, Optional
 from database import get_session
 from models import Restaurant, RestaurantCreate, RestaurantUpdate
 
 router = APIRouter(prefix="/api/restaurants", tags=["restaurants"])
 
 @router.get("/", response_model=List[Restaurant])
-def read_restaurants(session: Session = Depends(get_session)):
-    restaurants = session.exec(select(Restaurant)).all()
+def read_restaurants(
+    session: Session = Depends(get_session),
+    country: Optional[str] = None
+):
+    query = select(Restaurant)
+    if country:
+        query = query.where(Restaurant.country == country)
+    
+    restaurants = session.exec(query).all()
     return restaurants
 
 @router.post("/", response_model=Restaurant)
